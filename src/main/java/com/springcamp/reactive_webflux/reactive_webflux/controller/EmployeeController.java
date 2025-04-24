@@ -4,6 +4,7 @@ import com.springcamp.reactive_webflux.reactive_webflux.dto.EmployeeDto;
 import com.springcamp.reactive_webflux.reactive_webflux.entity.Employee;
 import com.springcamp.reactive_webflux.reactive_webflux.mapper.EmployeeMapper;
 import com.springcamp.reactive_webflux.reactive_webflux.repository.EmployeeRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,8 +20,7 @@ public class EmployeeController {
     private final EmployeeRepository employeeRepository;
 
     @PostMapping
-    public Mono<EmployeeDto> saveEmployee(
-            @RequestBody EmployeeDto employeeDto) {
+    public Mono<EmployeeDto> saveEmployee(@Valid @RequestBody EmployeeDto employeeDto) {
         Employee employee = EmployeeMapper.mapToEmployee(employeeDto);
         Mono<Employee> savedEmployee = employeeRepository.save(employee);
         return savedEmployee.map(EmployeeMapper::mapToEmployeeDto);
