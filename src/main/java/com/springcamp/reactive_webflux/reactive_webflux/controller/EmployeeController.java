@@ -1,15 +1,11 @@
 package com.springcamp.reactive_webflux.reactive_webflux.controller;
 
 import com.springcamp.reactive_webflux.reactive_webflux.dto.EmployeeDto;
-import com.springcamp.reactive_webflux.reactive_webflux.entity.Employee;
-import com.springcamp.reactive_webflux.reactive_webflux.mapper.EmployeeMapper;
-import com.springcamp.reactive_webflux.reactive_webflux.repository.EmployeeRepository;
+import com.springcamp.reactive_webflux.reactive_webflux.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -17,12 +13,16 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class EmployeeController {
 
-    private final EmployeeRepository employeeRepository;
+    private final EmployeeService employeeService;
 
     @PostMapping
+    @ResponseStatus(code = HttpStatus.CREATED)
     public Mono<EmployeeDto> saveEmployee(@Valid @RequestBody EmployeeDto employeeDto) {
-        Employee employee = EmployeeMapper.mapToEmployee(employeeDto);
-        Mono<Employee> savedEmployee = employeeRepository.save(employee);
-        return savedEmployee.map(EmployeeMapper::mapToEmployeeDto);
+        return employeeService.saveEmployee(employeeDto);
+    }
+
+    @GetMapping("{id}")
+    public Mono<EmployeeDto> getEmployeeById(@PathVariable("id") String employeeId) {
+        return employeeService.getEmployeeById(employeeId);
     }
 }
