@@ -22,6 +22,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 
 
 @ExtendWith(SpringExtension.class)
@@ -95,15 +96,10 @@ public class EmployeeControllerTest {
         given(employeeService.getAllEmployees()).willReturn(employeeFlux);
 
         // when--action or behaviour to test
-        WebTestClient.ResponseSpec responseSpec = webTestClient.get()
-                .uri("/api/employees")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange();
+        WebTestClient.ResponseSpec responseSpec = webTestClient.get().uri("/api/employees").accept(MediaType.APPLICATION_JSON).exchange();
 
         // then--verify output
-        responseSpec.expectStatus().isOk()
-                .expectBody()
-                .consumeWith(System.out::println);
+        responseSpec.expectStatus().isOk().expectBody().consumeWith(System.out::println);
     }
 
     // Junit test for update employee
@@ -111,23 +107,29 @@ public class EmployeeControllerTest {
     @Test
     public void givenEmployeeObject_whenUpdateEmployee_thenReturnEmployeeObject() {
         // given--precondition for setup
-        given(employeeService.updateEmployee(ArgumentMatchers.any(EmployeeDto.class), ArgumentMatchers.any(String.class)))
-                .willReturn(Mono.just(employeeDto));
+        given(employeeService.updateEmployee(ArgumentMatchers.any(EmployeeDto.class), ArgumentMatchers.any(String.class))).willReturn(Mono.just(employeeDto));
 
         // when--action or behaviour to test
-        WebTestClient.ResponseSpec response = webTestClient.put()
-                .uri("/api/employees/{id}", Collections.singletonMap("id", employeeDto.getId()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .body(Mono.just(employeeDto), EmployeeDto.class)
-                .exchange();
+        WebTestClient.ResponseSpec response = webTestClient.put().uri("/api/employees/{id}", Collections.singletonMap("id", employeeDto.getId())).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).body(Mono.just(employeeDto), EmployeeDto.class).exchange();
 
         // then--verify output
-        response.expectStatus().isOk()
+        response.expectStatus().isOk().expectBody().consumeWith(System.out::println).jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName()).jsonPath("$.lastName").isEqualTo(employeeDto.getLastName()).jsonPath("$.email").isEqualTo(employeeDto.getEmail());
+    }
+
+    // Junit test for delete employee
+    @DisplayName("Junit test for delete employee")
+    @Test
+    public void givenEmployeeId_whenDeleteEmployee_thenReturnNothing() {
+        // given--precondition for setup
+        given(employeeService.deleteEmployee(employeeDto.getId()))
+                .willReturn(Mono.empty());
+
+        // when--action or behaviour to test
+        WebTestClient.ResponseSpec response = webTestClient.delete().uri("/api/employees/{id}", Collections.singletonMap("id", employeeDto.getId())).exchange();
+
+        // then--verify output
+        response.expectStatus().isNoContent()
                 .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName())
-                .jsonPath("$.lastName").isEqualTo(employeeDto.getLastName())
-                .jsonPath("$.email").isEqualTo(employeeDto.getEmail());
+                .consumeWith(System.out::println);
     }
 }
