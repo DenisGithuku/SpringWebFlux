@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class EmployeeIntegrationTesting {
 
@@ -66,5 +68,29 @@ public class EmployeeIntegrationTesting {
         // verify
         response.expectStatus().isOk().expectBody().consumeWith(System.out::println)
                 .jsonPath("$.id").isEqualTo(savedEmployee.getId()).jsonPath("$.firstName").isEqualTo(savedEmployee.getFirstName()).jsonPath("$.lastName").isEqualTo(savedEmployee.getLastName()).jsonPath("$.email").isEqualTo(savedEmployee.getEmail());
+    }
+
+    @Test
+    @DisplayName("Integration test for update employee")
+    public void updateEmployee() {
+        // setup
+        EmployeeDto savedEmployee = employeeService.saveEmployee(employeeDto).block();
+        EmployeeDto updatedEmployee = new EmployeeDto();
+        updatedEmployee.setFirstName("Peter");
+        updatedEmployee.setLastName("Ndegwa");
+
+        WebTestClient.ResponseSpec response = webTestClient.put()
+                .uri("/api/employees/{id}", Collections.singletonMap("id", savedEmployee.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(updatedEmployee), EmployeeDto.class)
+                .exchange();
+
+        // verify
+        response.expectStatus().isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("$.firstName").isEqualTo(updatedEmployee.getFirstName())
+                .jsonPath("$.lastName").isEqualTo(updatedEmployee.getLastName());
     }
 }
