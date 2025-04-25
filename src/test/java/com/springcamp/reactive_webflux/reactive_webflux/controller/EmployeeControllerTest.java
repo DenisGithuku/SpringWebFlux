@@ -2,6 +2,7 @@ package com.springcamp.reactive_webflux.reactive_webflux.controller;
 
 import com.springcamp.reactive_webflux.reactive_webflux.dto.EmployeeDto;
 import com.springcamp.reactive_webflux.reactive_webflux.service.EmployeeService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +13,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -27,17 +30,22 @@ public class EmployeeControllerTest {
     @Autowired
     private WebTestClient webTestClient;
 
+    private EmployeeDto employeeDto;
+
+    @BeforeEach
+    public void setup() {
+        employeeDto = new EmployeeDto();
+        employeeDto.setFirstName("Denis");
+        employeeDto.setLastName("Githuku");
+        employeeDto.setEmail("githukudenis@gmail.com");
+    }
+
     // Junit test for save employee
     @DisplayName("Junit test for save employee")
     @Test
     public void givenEmployeeObject_whenSaveEmployee_thenReturnSavedEmployee() {
         // given--precondition for the setup
         // Provide stubs for service saveEmployee()
-        EmployeeDto employeeDto = new EmployeeDto();
-        employeeDto.setFirstName("Denis");
-        employeeDto.setLastName("Githuku");
-        employeeDto.setEmail("githukudenis@gmail.com");
-
         given(employeeService.saveEmployee(any(EmployeeDto.class))).willReturn(Mono.just(employeeDto));
 
         // when--action or behaviour to test
@@ -45,5 +53,20 @@ public class EmployeeControllerTest {
 
         // then--verify output
         responseSpec.expectStatus().isCreated().expectBody().consumeWith(System.out::println).jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName()).jsonPath("$.lastName").isEqualTo(employeeDto.getLastName()).jsonPath("$.email").isEqualTo(employeeDto.getEmail());
+    }
+
+    // Junit test for get employee by id
+    @DisplayName("Junit test for get employee by id")
+    @Test
+    public void givenEmployeeId_whenGetEmployeeById_thenReturnEmployeeObject() {
+        // given--precondition for setup
+        employeeDto.setId("1234");
+        given(employeeService.getEmployeeById(employeeDto.getId())).willReturn(Mono.just(employeeDto));
+
+        // when--action or behaviour to test
+        WebTestClient.ResponseSpec responseSpec = webTestClient.get().uri("/api/employees/{id}", Collections.singletonMap("id", employeeDto.getId())).exchange();
+
+        // then--verify output
+        responseSpec.expectStatus().isOk().expectBody().consumeWith(System.out::println).jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName()).jsonPath("$.lastName").isEqualTo(employeeDto.getLastName()).jsonPath("$.email").isEqualTo(employeeDto.getEmail());
     }
 }
