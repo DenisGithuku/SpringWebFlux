@@ -66,8 +66,7 @@ public class EmployeeIntegrationTesting {
         WebTestClient.ResponseSpec response = webTestClient.get().uri("/api/employees/{id}", savedEmployee.getId()).accept(MediaType.APPLICATION_JSON).exchange();
 
         // verify
-        response.expectStatus().isOk().expectBody().consumeWith(System.out::println)
-                .jsonPath("$.id").isEqualTo(savedEmployee.getId()).jsonPath("$.firstName").isEqualTo(savedEmployee.getFirstName()).jsonPath("$.lastName").isEqualTo(savedEmployee.getLastName()).jsonPath("$.email").isEqualTo(savedEmployee.getEmail());
+        response.expectStatus().isOk().expectBody().consumeWith(System.out::println).jsonPath("$.id").isEqualTo(savedEmployee.getId()).jsonPath("$.firstName").isEqualTo(savedEmployee.getFirstName()).jsonPath("$.lastName").isEqualTo(savedEmployee.getLastName()).jsonPath("$.email").isEqualTo(savedEmployee.getEmail());
     }
 
     @Test
@@ -79,18 +78,23 @@ public class EmployeeIntegrationTesting {
         updatedEmployee.setFirstName("Peter");
         updatedEmployee.setLastName("Ndegwa");
 
-        WebTestClient.ResponseSpec response = webTestClient.put()
-                .uri("/api/employees/{id}", Collections.singletonMap("id", savedEmployee.getId()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .body(Mono.just(updatedEmployee), EmployeeDto.class)
-                .exchange();
+        WebTestClient.ResponseSpec response = webTestClient.put().uri("/api/employees/{id}", Collections.singletonMap("id", savedEmployee.getId())).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).body(Mono.just(updatedEmployee), EmployeeDto.class).exchange();
 
         // verify
-        response.expectStatus().isOk()
-                .expectBody()
-                .consumeWith(System.out::println)
-                .jsonPath("$.firstName").isEqualTo(updatedEmployee.getFirstName())
-                .jsonPath("$.lastName").isEqualTo(updatedEmployee.getLastName());
+        response.expectStatus().isOk().expectBody().consumeWith(System.out::println).jsonPath("$.firstName").isEqualTo(updatedEmployee.getFirstName()).jsonPath("$.lastName").isEqualTo(updatedEmployee.getLastName());
+    }
+
+    @Test
+    @DisplayName("Integration testing for delete employee")
+    public void deleteEmployee() {
+        // setup
+        EmployeeDto savedEmployee = employeeService.saveEmployee(employeeDto).block();
+
+        WebTestClient.ResponseSpec response = webTestClient.delete().uri("/api/employees/{id}", Collections.singletonMap("id", savedEmployee.getId())).exchange();
+
+        // verify
+        response.expectStatus().isNoContent().expectBody().consumeWith(System.out::println);
+
+
     }
 }
