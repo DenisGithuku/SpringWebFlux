@@ -12,9 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -68,5 +71,37 @@ public class EmployeeControllerTest {
 
         // then--verify output
         responseSpec.expectStatus().isOk().expectBody().consumeWith(System.out::println).jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName()).jsonPath("$.lastName").isEqualTo(employeeDto.getLastName()).jsonPath("$.email").isEqualTo(employeeDto.getEmail());
+    }
+
+    // Junit test for get all employees
+    @DisplayName("Junit test for get all employees")
+    @Test
+    public void givenEmployeeList_whenGetAllEmployees_thenReturnEmployeeList() {
+        // given--precondition for setup
+        // Construct dto list
+        List<EmployeeDto> list = new ArrayList<>();
+        EmployeeDto employeeDto1 = new EmployeeDto();
+        employeeDto1.setFirstName("Peter");
+        employeeDto1.setLastName("Odhiambo");
+        employeeDto1.setEmail("peterodhiambo@gmail.com");
+
+        // Add dtos to the employee list
+        list.add(employeeDto);
+        list.add(employeeDto1);
+
+        // Construct employee flux
+        Flux<EmployeeDto> employeeFlux = Flux.fromIterable(list);
+        given(employeeService.getAllEmployees()).willReturn(employeeFlux);
+
+        // when--action or behaviour to test
+        WebTestClient.ResponseSpec responseSpec = webTestClient.get()
+                .uri("/api/employees")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange();
+
+        // then--verify output
+        responseSpec.expectStatus().isOk()
+                .expectBody()
+                .consumeWith(System.out::println);
     }
 }
