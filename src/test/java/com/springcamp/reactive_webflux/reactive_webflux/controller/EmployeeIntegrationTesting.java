@@ -1,6 +1,7 @@
 package com.springcamp.reactive_webflux.reactive_webflux.controller;
 
 import com.springcamp.reactive_webflux.reactive_webflux.dto.EmployeeDto;
+import com.springcamp.reactive_webflux.reactive_webflux.repository.EmployeeRepository;
 import com.springcamp.reactive_webflux.reactive_webflux.service.EmployeeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,13 +23,17 @@ public class EmployeeIntegrationTesting {
     @Autowired
     private WebTestClient webTestClient;
 
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
     @BeforeEach
     public void setup() {
         employeeDto = new EmployeeDto();
-        employeeDto.setId("245");
+        employeeDto.setId("123");
         employeeDto.setFirstName("Denis");
         employeeDto.setLastName("Githuku");
         employeeDto.setEmail("githukudenis@gmail.com");
+        employeeRepository.deleteAll().subscribe();
     }
 
     @Test
