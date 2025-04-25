@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.http.MediaType;
@@ -38,6 +39,7 @@ public class EmployeeControllerTest {
     @BeforeEach
     public void setup() {
         employeeDto = new EmployeeDto();
+        employeeDto.setId("123");
         employeeDto.setFirstName("Denis");
         employeeDto.setLastName("Githuku");
         employeeDto.setEmail("githukudenis@gmail.com");
@@ -63,7 +65,6 @@ public class EmployeeControllerTest {
     @Test
     public void givenEmployeeId_whenGetEmployeeById_thenReturnEmployeeObject() {
         // given--precondition for setup
-        employeeDto.setId("1234");
         given(employeeService.getEmployeeById(employeeDto.getId())).willReturn(Mono.just(employeeDto));
 
         // when--action or behaviour to test
@@ -103,5 +104,30 @@ public class EmployeeControllerTest {
         responseSpec.expectStatus().isOk()
                 .expectBody()
                 .consumeWith(System.out::println);
+    }
+
+    // Junit test for update employee
+    @DisplayName("Junit test for update employee")
+    @Test
+    public void givenEmployeeObject_whenUpdateEmployee_thenReturnEmployeeObject() {
+        // given--precondition for setup
+        given(employeeService.updateEmployee(ArgumentMatchers.any(EmployeeDto.class), ArgumentMatchers.any(String.class)))
+                .willReturn(Mono.just(employeeDto));
+
+        // when--action or behaviour to test
+        WebTestClient.ResponseSpec response = webTestClient.put()
+                .uri("/api/employees/{id}", Collections.singletonMap("id", employeeDto.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(employeeDto), EmployeeDto.class)
+                .exchange();
+
+        // then--verify output
+        response.expectStatus().isOk()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName())
+                .jsonPath("$.lastName").isEqualTo(employeeDto.getLastName())
+                .jsonPath("$.email").isEqualTo(employeeDto.getEmail());
     }
 }
