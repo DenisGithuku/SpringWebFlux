@@ -25,7 +25,7 @@ public class EmployeeIntegrationTesting {
     @BeforeEach
     public void setup() {
         employeeDto = new EmployeeDto();
-        employeeDto.setId("123");
+        employeeDto.setId("245");
         employeeDto.setFirstName("Denis");
         employeeDto.setLastName("Githuku");
         employeeDto.setEmail("githukudenis@gmail.com");
@@ -39,7 +39,21 @@ public class EmployeeIntegrationTesting {
 
         // then--verify
         response.expectStatus().isCreated().expectBody().consumeWith(System.out::println).jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName()).jsonPath("$.lastName").isEqualTo(employeeDto.getLastName()).jsonPath("$.email").isEqualTo(employeeDto.getEmail());
+    }
 
+    @Test
+    @DisplayName("Integration test for get all employees")
+    public void getAllEmployees() {
+        // setup
+        WebTestClient.ResponseSpec response = webTestClient.get()
+                .uri("/api/employees")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange();
 
+        // then--verify output
+        response.expectStatus()
+                .isOk()
+                .expectBodyList(EmployeeDto.class)
+                .consumeWith(System.out::println);
     }
 }
