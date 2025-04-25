@@ -45,15 +45,21 @@ public class EmployeeIntegrationTesting {
     @DisplayName("Integration test for get all employees")
     public void getAllEmployees() {
         // setup
-        WebTestClient.ResponseSpec response = webTestClient.get()
-                .uri("/api/employees")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange();
+        WebTestClient.ResponseSpec response = webTestClient.get().uri("/api/employees").accept(MediaType.APPLICATION_JSON).exchange();
 
         // then--verify output
-        response.expectStatus()
-                .isOk()
-                .expectBodyList(EmployeeDto.class)
-                .consumeWith(System.out::println);
+        response.expectStatus().isOk().expectBodyList(EmployeeDto.class).consumeWith(System.out::println);
+    }
+
+    @Test
+    @DisplayName("Integration test for get single employee")
+    public void getSingleEmployee() {
+        // setup
+        EmployeeDto savedEmployee = employeeService.saveEmployee(employeeDto).block();
+        WebTestClient.ResponseSpec response = webTestClient.get().uri("/api/employees/{id}", savedEmployee.getId()).accept(MediaType.APPLICATION_JSON).exchange();
+
+        // verify
+        response.expectStatus().isOk().expectBody().consumeWith(System.out::println)
+                .jsonPath("$.id").isEqualTo(savedEmployee.getId()).jsonPath("$.firstName").isEqualTo(savedEmployee.getFirstName()).jsonPath("$.lastName").isEqualTo(savedEmployee.getLastName()).jsonPath("$.email").isEqualTo(savedEmployee.getEmail());
     }
 }
